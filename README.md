@@ -9,12 +9,10 @@ This is a small soap bot :)
 + THESE DONORS HAVE TO BE FIXED! do not put freshly obtained donors in there, instead fix them with this for example :)
 3. Create a file named "serialblacklist.txt, and put blacklisted serials inside(or not). (There shouldnt be blacklisted serials when you pull serial from sticker)
 4. Replace token here in the last line with the discord token of the bot, I obviously wont share mine
-
+5. Set up cleaninty with cleaninty ctr SetupConstants
 
 ## Usage
-
--soap "link to essential file download(like discordapp.com)" "serial with checkdigit"
-
--errors are sent to console 
-
+command line: `python discordbot.py` \
+discord: `-soap <link to essential file download(like discordapp.com)> <serial with checkdigit>` \
+-errors are sent to console \
 -new donors are initialized on script launch
