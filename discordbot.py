@@ -116,7 +116,7 @@ async def on_message(message):
         print(message.content)
         argv = message.content.split()
         if argv[1] == "--help": 
-            await message.channel.send('usage: .soap <link to essential> <serial>')
+            await message.channel.send('usage: -soap <link to essential> <serial>')
         if not argv[1].startswith('https'):
             await message.channel.send('invalid syntax :(')
             break
