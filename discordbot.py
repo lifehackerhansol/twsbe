@@ -59,15 +59,17 @@ def getDonorCooldown(donor):
     return datetime.datetime.strptime(f"{date[6]}-{date[5]}-{date[4]}", "%Y-%b-%d")
 
 def initLastTransfersAndUpdateDonorDatabaseUpdatingTheStuffWithHeartToBeHappyWhenAllOfThisWorks():
+    seekcount = 0
     donors = os.listdir('./donors/')
     print("Initializing donors...")
+    db = open("db.txt", "w")
     for i in range(len(donors)):
-        if donors[i] == "db.txt":
-            continue
         lastmoved = getDonorCooldown(donors[i])
-        db = open("db.txt", "w")
-        db.write(f"{donors[i]} {lastmoved}\n")
-        db.close()
+        donorentry = f"{donors[i]} {lastmoved}\n"
+        db.seek(seekcount)
+        db.write(donorentry)
+        seekcount = seekcount + len(donorentry)
+    db.close()
     print("Done!")
 
 def getReadyDonor():
