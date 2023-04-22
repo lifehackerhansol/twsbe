@@ -101,7 +101,6 @@ def confirmCountryMatch(target, donor):
     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()
     donormessage = stdout.decode('utf-8').splitlines()
-    donorregion = message[5].split()[3]
     donorcountry = message[6].split()[3]
     command = ["cleaninty", "ctr", "CheckReg", "-C", target]
     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -110,12 +109,20 @@ def confirmCountryMatch(target, donor):
     targetregion = message[5].split()[3]
     targetcountry = message[6].split()[3]
     if targetcountry != donorcountry:
+        command = ["cleaninty", "ctr", "EShopDelete", "-C", donor]
+        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout, stderr = process.communicate()
+        if not "Complete!" in stdout.decode('utf-8').split():
+            print(f"EShopDelete of donor failed: {stdout.decode("utf-8")}\nFaulty donor: {donor}")
+            return 1
         command = ["cleaninty", "ctr", "EShopRegionChange", "-C", donor, "-r", targetregion, "-c", targetcountry]
         process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = process.communicate()
         if "Complete!" in stdout.decode('utf-8').split():
             return 0
         else:
+            print(f"EShopRegionChange on donor failed: {stdout.decode("utf-8")}\nMake sure you put a fixed donor inside. Faulty donor: {donor}")
             return 1
         
     
