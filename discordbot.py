@@ -97,7 +97,7 @@ def updateDonor(donor):
         offset = offset + len(donors[i])+1
     
 def confirmCountryMatch(target, donor):
-    command = ["cleaninty", "ctr", "CheckReg", "-C", donor"]
+    command = ["cleaninty", "ctr", "CheckReg", "-C", "donor"]
     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()
     donormessage = stdout.decode('utf-8').splitlines()
@@ -114,7 +114,7 @@ def confirmCountryMatch(target, donor):
         process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = process.communicate()
         if not "Complete!" in stdout.decode('utf-8').split():
-            print(f"EShopDelete of donor failed: {stdout.decode("utf-8")}\nFaulty donor: {donor}")
+            print(f"EShopDelete of donor failed: { stdout.decode('utf-8') }\nFaulty donor: {donor}")
             return 1
         command = ["cleaninty", "ctr", "EShopRegionChange", "-C", donor, "-r", targetregion, "-c", targetcountry]
         process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -122,7 +122,7 @@ def confirmCountryMatch(target, donor):
         if "Complete!" in stdout.decode('utf-8').split():
             return 0
         else:
-            print(f"EShopRegionChange on donor failed: {stdout.decode("utf-8")}\nMake sure you put a fixed donor inside. Faulty donor: {donor}")
+            print(f"EShopRegionChange on donor failed: {stdout.decode('utf-8')}\nMake sure you put a fixed donor inside. Faulty donor: {donor}")
             return 1
         
     
@@ -146,19 +146,20 @@ async def on_message(message):
         argv = message.content.split()
         if argv[1] == "--help": 
             await message.channel.send('usage: -soap <link to essential> <serial>')
+            return
         if not argv[1].startswith('https'):
             await message.channel.send('invalid syntax :(')
-            break
+            return
         if validSerial(argv[2]) == 1:
             await message.channel.send(f'invalid serial: {argv[2]}')
-            break
+            return
         elif validSerial(argv[2]) == 2:
             await message.channel.send(f'blacklisted serial(maybe lazed?): {argv[2]}')
-            break
+            return
         essential = requests.get(argv[1])
         if essential.status_code != 200:
             await message.channel.send(f"Bad link, returned {essential.status_code}")
-            break
+            return
         open("essential.exefs", 'wb').write(essential.content)
         if not os.path.exists("out"):
             os.makedirs("out")
@@ -168,7 +169,7 @@ async def on_message(message):
         if process.returncode != 0:
             await message.channel.send(f"exefs mount fail: {stderr.decode('utf-8')}")
             cleanup()
-            break
+            return
         else:
             print(f"mount exefs success: {stdout.decode('utf-8')}")
         secinfo = open("out/secinfo.bin", "rb")
@@ -177,12 +178,12 @@ async def on_message(message):
         if argv[2][(len(argv[2])-1):] != secinfoserial:
             await message.channel.send(f"Serials dont match! {argv[2][(len(argv[2])-1):]} not {secinfoserial}")
             cleanup()
-            break
+            return
         genjsoncountry = getCountry(argv[2][1])
         if genjsoncountry == 0:
             await message.channel.send(f"unknown serial: {argv[2]}")
             cleanup()
-            break
+            return
         command = ["cleaninty", "ctr", "GenJson", "--otp" "out/otp.bin", "--secureinfo", "secinfo.bin", "--country", genjsoncountry, "--out", "console.json"]
         progress = "[ ]Generated JSON\n[ ]CheckReg Success\n[ ]EShopRegionChange\n[ ]SysTransfer"
         progressmessage = await message.channel.send("[ ]Generated JSON\n[ ]CheckReg\n[ ]EShopRegionChange\n[ ]SysTransfer")
@@ -193,7 +194,7 @@ async def on_message(message):
             await progressmessage.edit(progress)
             print(f"genjson failure: {stderr.decode('utf-8')}")
             cleanup()
-            break
+            return
         else:
             progress.replace("[ ]G", "[S]G")
             print(f"genjson success: {stdout.decode('utf-8')}")
@@ -205,7 +206,7 @@ async def on_message(message):
             await progressmessage.edit(progress)
             print(f"checkreg failure: {stderr.decode('utf-8')}")
             cleanup()
-            break
+            return
         else:
             progress.replace("[ ]C", "[S]C")
             print(f"checkreg success: {stdout.decode('utf-8')}")
@@ -222,12 +223,12 @@ async def on_message(message):
             await progressmessage.edit(progress)
             await message.channel.send("Done! Make sure that the country in System Settings -> Other Settings -> Profile is set to new region and country, then try eShop!")
             cleanup()
-            break
+            return
         elif not ("602" in stderr.decode('utf-8').split() or "602" in stdout.decode('utf-8').split()): #dunno if it goes to stderr or stdout
             print(f"shit what happened{stdout.decode('utf-8')} & {stderr.decode('utf-8')}")
             await message.channel.send("Error while EShopRegionChange! Check logs for details")
             cleanup()
-            break
+            return
         thedonor = f"donors/{getReadyDonor()}"
         confirmCountryMatch("console.json", thedonor)
         command = ["cleaninty", "ctr", "-s", "console.json", "-t", thedonor]
@@ -244,8 +245,9 @@ async def on_message(message):
             print(f"SysTransfer failure: {stdout.decode('utf-8')}")
             await progressmessage.edit(progress)
             cleanup()
-            break
+            return
         updateDonor(thedonor)
+        return
     
 initLastTransfersAndUpdateDonorDatabaseUpdatingTheStuffWithHeartToBeHappyWhenAllOfThisWorks()
 client.run("token here")
