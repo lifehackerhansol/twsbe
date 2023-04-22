@@ -46,17 +46,17 @@ def cleanup():
     os.remove("essential.exefs")
 
 def getDonorCooldown(donor):
-    command = ["cleaninty", "ctr", "LastTransfer", "-C", f"donors/{donors[i]}"]
+    command = ["cleaninty", "ctr", "LastTransfer", "-C", f"donors/{donor}"]
     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()
     if process.returncode != 0:
         print(f"faulty donor: {donors[i]}")
         print("exiting...")
         exit()
-    v = stdout.splitlines()[5]
-    print(f"donor {donors[i]} {v}")
-    date = v.split()
-    return datetime.datetime.strmptime(f"{date[4]}-{date[5]}-{date[6]}")
+    v = stdout.splitlines()[4]
+    print(f"donor {donor} {v.decode('utf-8')}")
+    date = v.decode('utf-8').split()
+    return datetime.datetime.strptime(f"{date[6]}-{date[5]}-{date[4]}", "%Y-%b-%d")
 
 def initLastTransfersAndUpdateDonorDatabaseUpdatingTheStuffWithHeartToBeHappyWhenAllOfThisWorks():
     donors = os.listdir('./donors/')
@@ -77,7 +77,7 @@ def getReadyDonor():
     for i in range(len(donors)):
         donorlastmoved = donors[i].split()[1]
         currenttime = datetime.datetime.now().strftime("%Y-%b-%d")
-        if currenttime > donorlastmoved:
+        if currenttime - datetime.timedelta(days=7) > donorlastmoved:
             return f"donors/{donors[i]}"
          
 def updateDonor(donor):
