@@ -58,7 +58,7 @@ def getDonorCooldown(donor):
     date = v.decode('utf-8').split()
     return datetime.datetime.strptime(f"{date[6]}-{date[5]}-{date[4]}", "%Y-%b-%d")
 
-def initLastTransfersAndUpdateDonorDatabaseUpdatingTheStuffWithHeartToBeHappyWhenAllOfThisWorks():
+def initDatabase():
     seekcount = 0
     donors = os.listdir('./donors/')
     print("Initializing donors...")
@@ -145,6 +145,8 @@ async def on_message(message):
     if message.content.startswith('-soap'):
         print(message.content)
         argv = message.content.split()
+        if len(argv) == 1: 
+            return
         if argv[1] == "--help": 
             await message.channel.send('usage: -soap <link to essential> <serial>')
             return
@@ -250,5 +252,5 @@ async def on_message(message):
         updateDonor(thedonor)
         return
     
-initLastTransfersAndUpdateDonorDatabaseUpdatingTheStuffWithHeartToBeHappyWhenAllOfThisWorks()
+initDatabase()
 client.run("token here")
