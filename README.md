@@ -12,7 +12,7 @@ This is a small soap bot :)
 
 ## Usage
 
--soap <link to essential file download(like discordapp.com)> <serial with checkdigit>
+-soap "link to essential file download(like discordapp.com)" "serial with checkdigit"
 
 -errors are sent to console 
 
