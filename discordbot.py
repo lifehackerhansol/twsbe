@@ -96,7 +96,29 @@ def updateDonor(donor):
             return
         offset = offset + len(donors[i])+1
     
-
+def confirmCountryMatch(target, donor):
+    command = ["cleaninty", "ctr", "CheckReg", "-C", donor"]
+    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    stdout, stderr = process.communicate()
+    donormessage = stdout.decode('utf-8').splitlines()
+    donorregion = message[5].split()[3]
+    donorcountry = message[6].split()[3]
+    command = ["cleaninty", "ctr", "CheckReg", "-C", target]
+    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    stdout, stderr = process.communicate()
+    targetmessage = stdout.decode('utf-8').splitlines()
+    targetregion = message[5].split()[3]
+    targetcountry = message[6].split()[3]
+    if targetcountry != donorcountry:
+        command = ["cleaninty", "ctr", "EShopRegionChange", "-C", donor, "-r", targetregion, "-c", targetcountry]
+        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout, stderr = process.communicate()
+        if "Complete!" in stdout.decode('utf-8').split():
+            return 0
+        else:
+            return 1
+        
+    
 
 
 intents = discord.Intents.default()
@@ -112,7 +134,7 @@ async def on_ready():
 async def on_message(message):
     if message.author == client.user:
         return
-    if message.content.startswith('.soap'):
+    if message.content.startswith('-soap'):
         print(message.content)
         argv = message.content.split()
         if argv[1] == "--help": 
@@ -180,7 +202,10 @@ async def on_message(message):
         else:
             progress.replace("[ ]C", "[S]C")
             print(f"checkreg success: {stdout.decode('utf-8')}")
-        command = ["cleaninty", "ctr", "EShopRegionChange", "-C", "console.json", "-r", "USA", "-c", "US"]
+        if genjsoncountry != "US":
+            command = ["cleaninty", "ctr", "EShopRegionChange", "-C", "console.json", "-r", "USA", "-c", "US"]
+        else:
+            command = ["cleaninty", "ctr", "EShopRegionChange", "-C", "console.json", "-r", "EUR", "-c", "GB"]
         process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = process.communicate()
         if "Complete!" in stdout.decode('utf-8').split():
@@ -196,8 +221,9 @@ async def on_message(message):
             await message.channel.send("Error while EShopRegionChange! Check logs for details")
             cleanup()
             break
-        thedonor = getReadyDonor()
-        command = ["cleaninty", "ctr", "-s", "console.json", "-t", f"donors/{thedonor}"]
+        thedonor = f"donors/{getReadyDonor()}"
+        confirmCountryMatch("console.json", thedonor)
+        command = ["cleaninty", "ctr", "-s", "console.json", "-t", thedonor]
         process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = process.communicate()
         if "Complete!" in stdout.decode('utf-8').split():
