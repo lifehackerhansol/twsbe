@@ -113,7 +113,6 @@ def confirmCountryMatch(target, donor):
     if targetcountry != donorcountry:
         command = ["cleaninty", "ctr", "EShopDelete", "-C", donor]
         process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = process.communicate()
         if not "Complete!" in stdout.decode('utf-8').split():
             print(f"EShopDelete of donor failed: { stdout.decode('utf-8') }\nFaulty donor: {donor}")
